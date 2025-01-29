@@ -1,20 +1,30 @@
-# Node.js with React
-# Build a Node.js project that uses React.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 trigger:
-- master
+  - master
 
 pool:
-  name: Default  # Replace with your self-hosted agent pool name
+  name: "Default"  
   
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+jobs:
+  deploy:
+    steps:
+      - script: |
+          # Login to Docker Hub or ACR
+          echo $(DOCKERHUB_PASSWORD) | docker login -u $(DOCKERHUB_USERNAME) --password-stdin
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+          # Pull the latest image
+          docker pull $(DOCKER_IMAGE):latest
+
+          # Stop and remove the old container if it exists
+          docker stop myapp || true
+          docker rm myapp || true
+
+          # Run the new container
+          docker run -d \
+            --name myapp \
+            --restart unless-stopped \
+            -p 3000:3000 \
+            $(DOCKER_IMAGE):latest
+
+          # Clean up old images
+          docker image prune -f
+        displayName: "Deploy to Server"
