@@ -1,0 +1,32 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  name: Default
+
+jobs:
+  - job: deploy
+    steps:
+      - script: |
+          # Login to Docker Hub or ACR
+          echo $(DOCKERHUB_PASSWORD) | docker login -u $(DOCKERHUB_USERNAME) --password-stdin
+
+          # Pull the latest image
+          docker pull $(DOCKER_IMAGE):latest
+
+          # Stop and remove the old container if it exists
+          docker stop myapp || true
+          docker rm myapp || true
+
+          # Run the new container
+          docker run -d \
+            --name myapp \
+            --restart unless-stopped \
+            -p 3000:3000 \
+            $(DOCKER_IMAGE):latest
+
+          # Clean up old images
+          docker image prune -f
+        displayName: "Deploy to Server"
