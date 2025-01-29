@@ -2,13 +2,12 @@
 # Build a Node.js project that uses React.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
-
+  name: Default  # Replace with your self-hosted agent pool name
+  
 steps:
 - task: NodeTool@0
   inputs:
